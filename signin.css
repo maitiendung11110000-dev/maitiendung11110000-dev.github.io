@@ -1,0 +1,119 @@
+/* Thiết lập cơ bản cho toàn bộ trang */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e9ecef; /* Màu nền nhẹ nhàng, hiện đại hơn */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* Định dạng container chung cho cả login và register */
+.login-container {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 10px; /* Bo tròn góc mềm mại hơn */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); /* Đổ bóng nổi bật */
+    width: 100%;
+    max-width: 400px; /* Tăng chiều rộng tối đa một chút */
+    text-align: center;
+}
+
+h2 {
+    margin-bottom: 30px;
+    color: #343a40; /* Màu chữ tiêu đề */
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/* Nhóm input và label */
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.input-group input[type="text"],
+.input-group input[type="email"],
+.input-group input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #007bff; /* Viền xanh khi focus */
+    outline: none; /* Bỏ viền mặc định của trình duyệt */
+}
+
+/* Style cho nút Đăng Nhập (Login) */
+.login-btn {
+    background-color: #28a745; /* Màu xanh lá cây - Success */
+    color: white;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 17px;
+    margin-top: 10px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.login-btn:hover {
+    background-color: #218838;
+}
+
+/* Style riêng cho nút Đăng Ký (Register) - Màu xanh dương */
+/* Lưu ý: Để sử dụng style này, bạn phải đặt class "register-btn" cho nút Đăng Ký trong HTML */
+.register-btn {
+    background-color: #007bff; /* Màu xanh dương - Primary */
+    color: white;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 17px;
+    margin-top: 10px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.register-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Liên kết chân trang */
+.footer-links {
+    margin-top: 25px;
+    font-size: 14px;
+}
+
+.footer-links a {
+    color: #007bff;
+    text-decoration: none;
+    margin: 0 10px;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
+
+.footer-links span {
+    color: #6c757d;
+}
