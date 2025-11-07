@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Đăng Nhập</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="login-container">
+        <h2>Đăng Nhập</h2>
+        <form action="http://127.0.0.1:5500/baitaplon.html" method="POST">
+            <div class="input-group">
+                <label for="username">Tên người dùng:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Mật khẩu:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="login-btn">Đăng Nhập</button>
+            <div class="footer-links">
+                <a href="#">Quên mật khẩu?</a>
+                <a href="http://127.0.0.1:5500/signin.html">Đăng ký</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
