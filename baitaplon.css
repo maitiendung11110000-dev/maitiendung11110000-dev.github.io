@@ -30,7 +30,7 @@ h2{
     padding: 20px 0;
     text-align: center;
 }
-.main-div{
+.main-nav{
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -38,7 +38,7 @@ h2{
     padding: 0px;
 }
 
-.main-div ul {
+.main-nav ul {
     list-style: none;
     background: #555;
     text-align: center;
@@ -47,18 +47,18 @@ h2{
     align-items: center;
 }
 
-.main-div ul li {
+.main-nav ul li {
     margin: 0 15px;
 }
 
-.main-div ul li a {
+.main-nav ul li a {
     color: white;
     text-decoration: none;
     padding: 5px 10px;
     display: block;
 }
 
-.main-div ul li a:hover {
+.main-nav ul li a:hover {
     background-color: #777;
 }
 
