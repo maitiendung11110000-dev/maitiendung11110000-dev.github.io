@@ -1,4 +1,4 @@
-/* Thiết lập cơ bản*/
+/* Thiết lập*/
 body {
     font-family: Arial, sans-serif;
     background: linear-gradient(to left, rgb(221, 161, 48), #9d3e99);
@@ -26,7 +26,7 @@ h2 {
     font-weight: 600;
 }
 
-/* Nhóm input và label */
+/*input và label */
 .input-group {
     margin-bottom: 20px;
     text-align: left;
@@ -56,7 +56,7 @@ h2 {
     outline: none;
 }
 
-/* Style cho nút Đăng Nhập (Login) */
+/*Đăng Nhập */
 .login-btn {
     background-color: #28a745;
     color: white;
@@ -93,7 +93,7 @@ h2 {
     background-color: #0056b3;
 }
 
-/* Liên kết chân trang */
+/* chân trang */
 .footer-links {
     margin-top: 25px;
     font-size: 14px;
