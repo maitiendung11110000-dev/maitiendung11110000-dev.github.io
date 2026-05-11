@@ -3,98 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mô phỏng: 5, 7, 4, 2, 8, 9</title>
+    <title>Sắp xếp Chèn - Kiểu thẻ bài</title>
     <style>
         :root {
-            --bg-body: #f0f4f8;
-            --card-bg: #ffffff;
-            --primary: #3498db;
-            --sorted: #2ecc71; /* Xanh lá: Đã xong */
-            --picked: #e74c3c; /* Đỏ: Đang cầm trên tay */
-            --compare: #f1c40f; /* Vàng: Đang so sánh/nhường chỗ */
-            --default: #dfe6e9; /* Xám: Chưa xét tới */
+            --bg: #f8f9fa;
+            --card-unsorted: #bdc3c7;
+            --card-picked: #e74c3c; /* Đỏ - Đang cầm trên tay */
+            --card-push: #f1c40f;   /* Vàng - Đang bị đẩy sang */
+            --card-sorted: #2ecc71; /* Xanh - Đã nằm yên */
+            --text: #2c3e50;
         }
 
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--bg-body);
-            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
+            color: var(--text);
         }
 
-        /* KHUNG GIẢI THÍCH CỰC TO */
-        .explanation-card {
-            width: 100%;
+        /* KHUNG GIẢI THÍCH DỄ HIỂU */
+        .story-box {
+            width: 90%;
             max-width: 800px;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             margin-bottom: 30px;
-            border-bottom: 8px solid var(--primary);
+            text-align: center;
+            border-bottom: 5px solid #3498db;
         }
 
-        #main-text {
-            font-size: 32px;
+        #main-story {
+            font-size: 28px;
             font-weight: 800;
-            color: #2d3436;
-            margin-bottom: 15px;
-            line-height: 1.2;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            min-height: 1.2em;
         }
 
-        #sub-text {
-            font-size: 20px;
-            color: #636e72;
-            min-height: 24px;
+        #detail-story {
+            font-size: 18px;
+            color: #7f8c8d;
+            font-style: italic;
         }
 
-        /* KHUNG HIỂN THỊ CỘT SỐ */
-        .visualizer {
+        /* KHUNG MÔ PHỎNG */
+        .stage {
             display: flex;
             align-items: flex-end;
             justify-content: center;
-            gap: 20px;
-            height: 350px;
-            width: 100%;
+            height: 300px;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            width: 90%;
             max-width: 800px;
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
         .bar {
-            width: 60px;
-            background-color: var(--default);
-            border-radius: 10px 10px 4px 4px;
+            width: 45px;
+            background-color: var(--card-unsorted);
+            border-radius: 8px 8px 2px 2px;
             display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            color: #2d3436;
+            justify-content: center;
+            align-items: flex-end;
+            color: white;
             font-weight: bold;
-            font-size: 24px;
-            padding-bottom: 15px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 18px;
+            padding-bottom: 10px;
+            transition: all 0.4s ease;
             position: relative;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* Hiệu ứng nhấc lên cao khi đang cầm */
-        .bar.active {
-            transform: translateY(-40px);
-            box-shadow: 0 20px 25px rgba(231, 76, 60, 0.3);
-            background-color: var(--picked) !important;
-            color: white;
+        /* Hiệu ứng nhấc lên khi đang cầm trên tay */
+        .bar.picked {
+            transform: translateY(-30px);
+            box-shadow: 0 15px 20px rgba(231, 76, 60, 0.4);
         }
 
         /* ĐIỀU KHIỂN */
-        .controls {
-            margin-top: 40px;
+        .buttons {
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
@@ -102,171 +96,170 @@
         }
 
         button {
-            padding: 15px 35px;
+            padding: 15px 30px;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .btn-step { background-color: var(--primary); color: white; }
-        .btn-auto { background-color: var(--sorted); color: white; }
-        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-next { background: #3498db; color: white; }
+        .btn-auto { background: #2ecc71; color: white; }
+        .btn-reset { background: #95a5a6; color: white; }
+        button:hover { opacity: 0.9; transform: scale(1.05); }
+        button:disabled { background: #ddd; cursor: not-allowed; transform: none; }
 
-        button:hover { transform: translateY(-3px); opacity: 0.9; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; transform: none; }
-
-        .speed-control {
+        .speed-box {
             margin-top: 20px;
-            color: #636e72;
-            font-weight: bold;
+            font-size: 14px;
+            color: #95a5a6;
         }
     </style>
 </head>
 <body>
 
-    <div class="explanation-card">
-        <div id="main-text">Dãy số: 5, 7, 4, 2, 8, 9</div>
-        <div id="sub-text">Nhấn nút "Xem từng bước" để tôi kể chuyện cho bạn nghe.</div>
+    <div class="story-box">
+        <div id="main-story">Nhấn nút để bắt đầu!</div>
+        <div id="detail-story">Tôi sẽ hướng dẫn bạn xếp mảng này theo thứ tự từ nhỏ đến lớn.</div>
     </div>
 
-    <div class="visualizer" id="visualizer">
-        <!-- Các cột số sẽ hiện ở đây -->
+    <div class="stage" id="stage"></div>
+
+    <div class="buttons">
+        <button class="btn-reset" onclick="resetArray()">🔄 Làm mảng mới</button>
+        <button class="btn-next" id="nextBtn" onclick="nextStep()">👉 Xem bước tiếp theo</button>
+        <button class="btn-auto" id="autoBtn" onclick="autoRun()">▶ Tự động chạy luôn</button>
     </div>
 
-    <div class="controls">
-        <button class="btn-step" id="stepBtn" onclick="nextStep()">👉 Xem từng bước</button>
-        <button class="btn-auto" id="autoBtn" onclick="autoRun()">▶ Chạy tự động</button>
-    </div>
-
-    <div class="speed-control">
-        Tốc độ: <input type="range" id="speed" min="300" max="1500" value="900">
+    <div class="speed-box">
+        Tốc độ chạy tự động: 
+        <input type="range" id="speed" min="200" max="1500" value="800" style="vertical-align: middle;">
     </div>
 
     <script>
-        let array = [5, 7, 4, 2, 8, 9];
-        let i = 1; 
-        let j = 0;
-        let key = 0;
-        let phase = "PICK"; // PICK, COMPARE, INSERT, DONE
-        let isAuto = false;
+        let array = [];
+        let i = 1, j = 0, key = 0;
+        let step = "PICK"; // PICK, COMPARE, INSERT
+        let isRunning = false;
 
-        function init() {
-            array = [5, 7, 4, 2, 8, 9];
-            i = 1;
-            phase = "PICK";
-            isAuto = false;
-            document.getElementById('stepBtn').disabled = false;
+        function resetArray() {
+            array = [];
+            const stage = document.getElementById('stage');
+            stage.innerHTML = '';
+            for (let k = 0; k < 10; k++) {
+                let val = Math.floor(Math.random() * 70) + 10;
+                array.push(val);
+                let bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.id = `bar-${k}`;
+                bar.style.height = `${val * 3}px`;
+                bar.innerText = val;
+                stage.appendChild(bar);
+            }
+            i = 1; step = "PICK"; isRunning = false;
+            document.getElementById('nextBtn').disabled = false;
             document.getElementById('autoBtn').disabled = false;
-            document.getElementById('main-text').innerText = "Dãy số: 5, 7, 4, 2, 8, 9";
-            document.getElementById('sub-text').innerText = "Số đầu tiên (5) coi như đã đứng đúng chỗ.";
-            render();
+            document.getElementById('main-story').innerText = "Mảng mới đã sẵn sàng!";
+            document.getElementById('detail-story').innerText = "Bây giờ ta bắt đầu sắp xếp nhé.";
+            resetColors();
         }
 
-        function render() {
-            const container = document.getElementById('visualizer');
-            container.innerHTML = '';
-            array.forEach((val, index) => {
-                const bar = document.createElement('div');
-                bar.className = 'bar';
-                bar.id = `bar-${index}`;
-                bar.style.height = `${val * 30}px`;
-                bar.innerText = val;
-                
-                // Tô màu theo trạng thái
-                if (phase === "DONE") {
-                    bar.style.backgroundColor = 'var(--sorted)';
-                    bar.style.color = 'white';
-                }
-                container.appendChild(bar);
+        function resetColors() {
+            document.querySelectorAll('.bar').forEach(b => {
+                b.style.backgroundColor = 'var(--card-unsorted)';
+                b.classList.remove('picked');
             });
+        }
+
+        function updateUI() {
+            array.forEach((val, idx) => {
+                let bar = document.getElementById(`bar-${idx}`);
+                bar.style.height = `${val * 3}px`;
+                bar.innerText = val;
+            });
+        }
+
+        function highlightSorted(idx) {
+            for(let k = 0; k <= idx; k++) {
+                document.getElementById(`bar-${k}`).style.backgroundColor = 'var(--card-sorted)';
+            }
         }
 
         async function nextStep() {
             if (i >= array.length) {
-                phase = "DONE";
-                render();
-                document.getElementById('main-text').innerText = "🎉 Xong rồi!";
-                document.getElementById('sub-text').innerText = "Dãy số đã được sắp xếp tăng dần: 2, 4, 5, 7, 8, 9";
-                document.getElementById('stepBtn').disabled = true;
-                document.getElementById('autoBtn').disabled = true;
+                document.getElementById('main-story').innerText = "🎉 Xong rồi!";
+                document.getElementById('detail-story').innerText = "Mọi con số đã đứng đúng vị trí từ thấp đến cao.";
+                highlightSorted(array.length - 1);
                 return;
             }
 
-            if (phase === "PICK") {
+            if (step === "PICK") {
                 key = array[i];
-                render();
-                // Tô màu các số đã xếp xong trước đó
-                for(let k=0; k<i; k++) document.getElementById(`bar-${k}`).style.backgroundColor = 'var(--sorted)';
+                resetColors();
+                highlightSorted(i - 1);
+                let currentBar = document.getElementById(`bar-${i}`);
+                currentBar.classList.add('picked');
+                currentBar.style.backgroundColor = 'var(--card-picked)';
                 
-                const currentBar = document.getElementById(`bar-${i}`);
-                currentBar.classList.add('active');
-                
-                document.getElementById('main-text').innerText = `Bước ${i}: Nhấc số ${key} lên!`;
-                document.getElementById('sub-text').innerText = `Ta sẽ đi tìm chỗ cho ${key} trong nhóm màu xanh bên trái.`;
+                document.getElementById('main-story').innerText = `Nhấc số ${key} lên!`;
+                document.getElementById('detail-story').innerText = `Ta sẽ mang số ${key} đi tìm chỗ đứng thích hợp ở phía trước.`;
                 
                 j = i - 1;
-                phase = "COMPARE";
+                step = "COMPARE";
             } 
-            else if (phase === "COMPARE") {
+            else if (step === "COMPARE") {
                 if (j >= 0 && array[j] > key) {
-                    const compBar = document.getElementById(`bar-${j}`);
-                    compBar.style.backgroundColor = 'var(--compare)';
+                    let compareBar = document.getElementById(`bar-${j}`);
+                    compareBar.style.backgroundColor = 'var(--card-push)';
                     
-                    document.getElementById('main-text').innerText = `So sánh: ${array[j]} lớn hơn ${key}`;
-                    document.getElementById('sub-text').innerText = `Vì thế, số ${array[j]} lùi sang phải một bước để nhường chỗ.`;
+                    document.getElementById('main-story').innerText = `${array[j]} lớn hơn ${key}`;
+                    document.getElementById('detail-story').innerText = `Nên ta đẩy ${array[j]} sang phải một chút để nhường chỗ cho ${key}.`;
                     
                     array[j + 1] = array[j];
+                    updateUI();
+                    // Giữ màu cho các thanh
+                    document.getElementById(`bar-${j+1}`).style.backgroundColor = 'var(--card-push)';
+                    document.getElementById(`bar-${i}`).classList.remove('picked'); // Thanh cũ
                     
-                    // Delay một chút để thấy sự dịch chuyển
-                    await new Promise(r => setTimeout(r, 100));
-                    render();
-                    
-                    // Giữ trạng thái hiển thị
-                    document.getElementById(`bar-${j}`).style.backgroundColor = 'var(--compare)';
-                    for(let k=0; k<j; k++) document.getElementById(`bar-${k}`).style.backgroundColor = 'var(--sorted)';
-
                     j--;
                 } else {
-                    phase = "INSERT";
+                    step = "INSERT";
                     nextStep();
                 }
             } 
-            else if (phase === "INSERT") {
+            else if (step === "INSERT") {
                 array[j + 1] = key;
-                render();
+                updateUI();
+                resetColors();
+                highlightSorted(i);
                 
-                document.getElementById('main-text').innerText = `Đặt số ${key} xuống`;
-                document.getElementById('sub-text').innerText = `Chỗ này là vị trí thích hợp nhất của nó rồi.`;
+                document.getElementById('main-story').innerText = `Đặt số ${key} xuống đây.`;
+                document.getElementById('detail-story').innerText = `Đây là vị trí hợp lý nhất hiện tại cho số ${key}.`;
                 
-                // Tô màu đoạn đã xong
-                for(let k=0; k<=i; k++) document.getElementById(`bar-${k}`).style.backgroundColor = 'var(--sorted)';
-
                 i++;
-                phase = "PICK";
+                step = "PICK";
             }
         }
 
         async function autoRun() {
-            if (isAuto) return;
-            isAuto = true;
+            if (isRunning) return;
+            isRunning = true;
             document.getElementById('autoBtn').disabled = true;
-            document.getElementById('stepBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
 
-            while (i < array.length || phase !== "PICK") {
+            while (i < array.length || step !== "PICK") {
                 await nextStep();
-                const speed = 2000 - document.getElementById('speed').value;
+                let speed = 1700 - document.getElementById('speed').value;
                 await new Promise(r => setTimeout(r, speed));
-                if (phase === "DONE") break;
+                if (i >= array.length && step === "PICK") break;
             }
-            isAuto = false;
+            isRunning = false;
+            nextStep(); // Để hiện thông báo kết thúc
         }
 
-        // Khởi tạo lần đầu
-        init();
+        resetArray();
     </script>
 </body>
 </html>
