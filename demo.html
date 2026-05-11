@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sắp xếp Chèn - Kiểu thẻ bài</title>
+    <style>
+        :root {
+            --bg: #f8f9fa;
+            --card-unsorted: #bdc3c7;
+            --card-picked: #e74c3c; /* Đỏ - Đang cầm trên tay */
+            --card-push: #f1c40f;   /* Vàng - Đang bị đẩy sang */
+            --card-sorted: #2ecc71; /* Xanh - Đã nằm yên */
+            --text: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        /* KHUNG GIẢI THÍCH DỄ HIỂU */
+        .story-box {
+            width: 90%;
+            max-width: 800px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 5px solid #3498db;
+        }
+
+        #main-story {
+            font-size: 28px;
+            font-weight: 800;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            min-height: 1.2em;
+        }
+
+        #detail-story {
+            font-size: 18px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        /* KHUNG MÔ PHỎNG */
+        .stage {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 300px;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+        }
+
+        .bar {
+            width: 45px;
+            background-color: var(--card-unsorted);
+            border-radius: 8px 8px 2px 2px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            padding-bottom: 10px;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        /* Hiệu ứng nhấc lên khi đang cầm trên tay */
+        .bar.picked {
+            transform: translateY(-30px);
+            box-shadow: 0 15px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        /* ĐIỀU KHIỂN */
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-next { background: #3498db; color: white; }
+        .btn-auto { background: #2ecc71; color: white; }
+        .btn-reset { background: #95a5a6; color: white; }
+        button:hover { opacity: 0.9; transform: scale(1.05); }
+        button:disabled { background: #ddd; cursor: not-allowed; transform: none; }
+
+        .speed-box {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="story-box">
+        <div id="main-story">Nhấn nút để bắt đầu!</div>
+        <div id="detail-story">Tôi sẽ hướng dẫn bạn xếp mảng này theo thứ tự từ nhỏ đến lớn.</div>
+    </div>
+
+    <div class="stage" id="stage"></div>
+
+    <div class="buttons">
+        <button class="btn-reset" onclick="resetArray()">🔄 Làm mảng mới</button>
+        <button class="btn-next" id="nextBtn" onclick="nextStep()">👉 Xem bước tiếp theo</button>
+        <button class="btn-auto" id="autoBtn" onclick="autoRun()">▶ Tự động chạy luôn</button>
+    </div>
+
+    <div class="speed-box">
+        Tốc độ chạy tự động: 
+        <input type="range" id="speed" min="200" max="1500" value="800" style="vertical-align: middle;">
+    </div>
+
+    <script>
+        let array = [];
+        let i = 1, j = 0, key = 0;
+        let step = "PICK"; // PICK, COMPARE, INSERT
+        let isRunning = false;
+
+        function resetArray() {
+            array = [];
+            const stage = document.getElementById('stage');
+            stage.innerHTML = '';
+            for (let k = 0; k < 10; k++) {
+                let val = Math.floor(Math.random() * 70) + 10;
+                array.push(val);
+                let bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.id = `bar-${k}`;
+                bar.style.height = `${val * 3}px`;
+                bar.innerText = val;
+                stage.appendChild(bar);
+            }
+            i = 1; step = "PICK"; isRunning = false;
+            document.getElementById('nextBtn').disabled = false;
+            document.getElementById('autoBtn').disabled = false;
+            document.getElementById('main-story').innerText = "Mảng mới đã sẵn sàng!";
+            document.getElementById('detail-story').innerText = "Bây giờ ta bắt đầu sắp xếp nhé.";
+            resetColors();
+        }
+
+        function resetColors() {
+            document.querySelectorAll('.bar').forEach(b => {
+                b.style.backgroundColor = 'var(--card-unsorted)';
+                b.classList.remove('picked');
+            });
+        }
+
+        function updateUI() {
+            array.forEach((val, idx) => {
+                let bar = document.getElementById(`bar-${idx}`);
+                bar.style.height = `${val * 3}px`;
+                bar.innerText = val;
+            });
+        }
+
+        function highlightSorted(idx) {
+            for(let k = 0; k <= idx; k++) {
+                document.getElementById(`bar-${k}`).style.backgroundColor = 'var(--card-sorted)';
+            }
+        }
+
+        async function nextStep() {
+            if (i >= array.length) {
+                document.getElementById('main-story').innerText = "🎉 Xong rồi!";
+                document.getElementById('detail-story').innerText = "Mọi con số đã đứng đúng vị trí từ thấp đến cao.";
+                highlightSorted(array.length - 1);
+                return;
+            }
+
+            if (step === "PICK") {
+                key = array[i];
+                resetColors();
+                highlightSorted(i - 1);
+                let currentBar = document.getElementById(`bar-${i}`);
+                currentBar.classList.add('picked');
+                currentBar.style.backgroundColor = 'var(--card-picked)';
+                
+                document.getElementById('main-story').innerText = `Nhấc số ${key} lên!`;
+                document.getElementById('detail-story').innerText = `Ta sẽ mang số ${key} đi tìm chỗ đứng thích hợp ở phía trước.`;
+                
+                j = i - 1;
+                step = "COMPARE";
+            } 
+            else if (step === "COMPARE") {
+                if (j >= 0 && array[j] > key) {
+                    let compareBar = document.getElementById(`bar-${j}`);
+                    compareBar.style.backgroundColor = 'var(--card-push)';
+                    
+                    document.getElementById('main-story').innerText = `${array[j]} lớn hơn ${key}`;
+                    document.getElementById('detail-story').innerText = `Nên ta đẩy ${array[j]} sang phải một chút để nhường chỗ cho ${key}.`;
+                    
+                    array[j + 1] = array[j];
+                    updateUI();
+                    // Giữ màu cho các thanh
+                    document.getElementById(`bar-${j+1}`).style.backgroundColor = 'var(--card-push)';
+                    document.getElementById(`bar-${i}`).classList.remove('picked'); // Thanh cũ
+                    
+                    j--;
+                } else {
+                    step = "INSERT";
+                    nextStep();
+                }
+            } 
+            else if (step === "INSERT") {
+                array[j + 1] = key;
+                updateUI();
+                resetColors();
+                highlightSorted(i);
+                
+                document.getElementById('main-story').innerText = `Đặt số ${key} xuống đây.`;
+                document.getElementById('detail-story').innerText = `Đây là vị trí hợp lý nhất hiện tại cho số ${key}.`;
+                
+                i++;
+                step = "PICK";
+            }
+        }
+
+        async function autoRun() {
+            if (isRunning) return;
+            isRunning = true;
+            document.getElementById('autoBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+
+            while (i < array.length || step !== "PICK") {
+                await nextStep();
+                let speed = 1700 - document.getElementById('speed').value;
+                await new Promise(r => setTimeout(r, speed));
+                if (i >= array.length && step === "PICK") break;
+            }
+            isRunning = false;
+            nextStep(); // Để hiện thông báo kết thúc
+        }
+
+        resetArray();
+    </script>
+</body>
+</html>
