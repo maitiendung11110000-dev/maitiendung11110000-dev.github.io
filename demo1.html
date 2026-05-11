@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Mô phỏng Selection Sort - Từng bước</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --current-color: #e74c3c; /* Đỏ - Vị trí i */
+            --compare-color: #f1c40f;  /* Vàng - Vị trí j đang so sánh */
+            --min-color: #2ecc71;     /* Xanh lá - Giá trị nhỏ nhất tạm thời */
+            --sorted-color: #9b59b6;   /* Tím - Đã sắp xếp */
+        }
+
+        body { font-family: 'Arial', sans-serif; background: #f0f2f5; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 90%; max-width: 800px; }
+        
+        /* Đồ họa mảng */
+        .array-display { display: flex; justify-content: center; align-items: flex-end; height: 160px; gap: 10px; margin: 20px 0; border-bottom: 2px solid #ddd; }
+        .bar { width: 45px; background: var(--primary-color); color: white; display: flex; justify-content: center; align-items: center; border-radius: 4px 4px 0 0; transition: all 0.3s; position: relative; font-weight: bold; }
+        .bar span { position: absolute; bottom: -25px; color: #333; font-size: 12px; }
+
+        /* Nút bấm */
+        .controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-reset { background: #95a5a6; color: white; }
+        .btn-step { background: #e67e22; color: white; }
+        .btn-auto { background: #27ae60; color: white; }
+        .btn-stop { background: #c0392b; color: white; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
+
+        /* Bảng tin và thống kê */
+        .info-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        #log { background: #2c3e50; color: #ecf0f1; padding: 15px; height: 180px; overflow-y: auto; border-radius: 8px; font-family: monospace; font-size: 13px; line-height: 1.5; }
+        .stats { background: #ecf0f1; padding: 15px; border-radius: 8px; }
+        
+        .highlight-text { font-weight: bold; padding: 2px 5px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Mô phỏng Selection Sort (Từng bước)</h2>
+    
+    <div class="controls">
+        <button class="btn-reset" onclick="initArray()">Tạo mảng mới</button>
+        <button class="btn-step" id="nextBtn" onclick="manualNextStep()">Bước tiếp theo ▶</button>
+        <button class="btn-auto" id="autoBtn" onclick="autoPlay()">Chạy tự động ⏩</button>
+        <button class="btn-stop" id="stopBtn" onclick="stopAuto()" disabled>Dừng ⏹</button>
+    </div>
+
+    <div class="array-display" id="arrayDisplay"></div>
+
+    <div class="info-grid">
+        <div>
+            <strong>Nhật ký thực hiện:</strong>
+            <div id="log"></div>
+        </div>
+        <div class="stats">
+            <strong>Thống kê:</strong>
+            <p>So sánh: <span id="compCount">0</span></p>
+            <p>Hoán đổi: <span id="swapCount">0</span></p>
+            <hr>
+            <div style="font-size: 12px;">
+                <p><span style="color:var(--current-color)">■</span> Đang xét (i)</p>
+                <p><span style="color:var(--compare-color)">■</span> Đang so sánh (j)</p>
+                <p><span style="color:var(--min-color)">■</span> Nhỏ nhất hiện tại</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let array = [];
+    let i = 0, j = 0, minIdx = 0;
+    let comparisons = 0, swaps = 0;
+    let isFinished = false;
+    let isAutoPlaying = false;
+    let autoInterval = null;
+    let stepState = 'INIT_I'; // Các trạng thái: INIT_I, COMPARE, SWAP
+
+    const log = document.getElementById('log');
+
+    // 1. Khởi tạo mảng
+    function initArray() {
+        stopAuto();
+        array = Array.from({length: 8}, () => Math.floor(Math.random() * 20) + 1);
+        i = 0; j = 0; minIdx = 0;
+        comparisons = 0; swaps = 0;
+        isFinished = false;
+        stepState = 'INIT_I';
+        
+        document.getElementById('compCount').innerText = 0;
+        document.getElementById('swapCount').innerText = 0;
+        log.innerHTML = "Đã khởi tạo mảng mới. Nhấn 'Bước tiếp theo' để bắt đầu.";
+        render();
+        document.getElementById('nextBtn').disabled = false;
+        document.getElementById('autoBtn').disabled = false;
+    }
+
+    // 2. Vẽ mảng ra màn hình
+    function render(highlight = {}) {
+        const display = document.getElementById('arrayDisplay');
+        display.innerHTML = '';
+        array.forEach((val, idx) => {
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.style.height = `${val * 7 + 20}px`;
+            bar.innerHTML = `${val}<span>[${idx}]</span>`;
+
+            // Tô màu
+            if (idx < i) bar.style.background = 'var(--sorted-color)'; // Đã xong
+            if (idx === i) bar.style.background = 'var(--current-color)'; // Vị trí i
+            if (idx === highlight.j) bar.style.background = 'var(--compare-color)'; // Đang so sánh
+            if (idx === minIdx && idx >= i) bar.style.background = 'var(--min-color)'; // Min tạm thời
+
+            display.appendChild(bar);
+        });
+    }
+
+    function addLog(msg) {
+        const p = document.createElement('div');
+        p.innerHTML = msg;
+        log.appendChild(p);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    // 3. Logic điều khiển từng bước
+    function manualNextStep() {
+        if (isFinished) return;
+
+        const n = array.length;
+
+        switch (stepState) {
+            case 'INIT_I':
+                if (i < n - 1) {
+                    minIdx = i;
+                    j = i + 1;
+                    addLog(`<b style="color:#e67e22">Bước ${i+1}:</b> Xét vị trí i=${i} (giá trị ${array[i]})`);
+                    stepState = 'COMPARE';
+                } else {
+                    isFinished = true;
+                    addLog("<b style='color:#27ae60'>HOÀN THÀNH SẮP XẾP!</b>");
+                    document.getElementById('nextBtn').disabled = true;
+                    document.getElementById('autoBtn').disabled = true;
+                    stopAuto();
+                }
+                render();
+                break;
+
+            case 'COMPARE':
+                if (j < n) {
+                    comparisons++;
+                    document.getElementById('compCount').innerText = comparisons;
+                    render({j: j});
+                    
+                    if (array[j] < array[minIdx]) {
+                        addLog(`- j=${j}: ${array[j]} < ${array[minIdx]} (Min mới là ${array[j]})`);
+                        minIdx = j;
+                    } else {
+                        // addLog(`- j=${j}: Không nhỏ hơn min`);
+                    }
+                    j++;
+                } else {
+                    addLog(`=> Tìm xong min là ${array[minIdx]} tại vị trí ${minIdx}`);
+                    stepState = 'SWAP';
+                    manualNextStep(); // Tự động chuyển qua trạng thái swap để mượt
+                }
+                break;
+
+            case 'SWAP':
+                if (minIdx !== i) {
+                    addLog(`=> Đổi chỗ ${array[i]} và ${array[minIdx]}`);
+                    [array[i], array[minIdx]] = [array[minIdx], array[i]];
+                    swaps++;
+                    document.getElementById('swapCount').innerText = swaps;
+                } else {
+                    addLog(`=> ${array[i]} đã là min, không cần đổi.`);
+                }
+                i++;
+                stepState = 'INIT_I';
+                render();
+                break;
+        }
+    }
+
+    // 4. Chế độ chạy tự động
+    function autoPlay() {
+        isAutoPlaying = true;
+        document.getElementById('autoBtn').disabled = true;
+        document.getElementById('nextBtn').disabled = true;
+        document.getElementById('stopBtn').disabled = false;
+        
+        autoInterval = setInterval(() => {
+            if (isFinished) {
+                stopAuto();
+            } else {
+                manualNextStep();
+            }
+        }, 600);
+    }
+
+    function stopAuto() {
+        isAutoPlaying = false;
+        clearInterval(autoInterval);
+        document.getElementById('autoBtn').disabled = isFinished;
+        document.getElementById('nextBtn').disabled = isFinished;
+        document.getElementById('stopBtn').disabled = true;
+    }
+
+    // Khởi tạo lần đầu
+    initArray();
+</script>
+
+</body>
+</html>
