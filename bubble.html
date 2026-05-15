@@ -6,73 +6,84 @@
     <title>Mô phỏng Bubble Sort</title>
     <style>
         body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
-    background-color: #f4f4f9;
+    background-color: #f0f2f5;
 }
 
 .container {
     text-align: center;
-    width: 80%;
-    margin-top: 50px;
+    width: 90%;
+    max-width: 800px;
+    margin-top: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .controls {
     margin-bottom: 30px;
 }
 
+.action-btns {
+    margin-top: 10px;
+}
+
 input {
-    padding: 8px;
-    width: 250px;
+    padding: 10px;
+    width: 200px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 button {
-    padding: 8px 15px;
+    padding: 10px 15px;
     cursor: pointer;
-    background-color: #4CAF50;
+    background-color: #3498db;
     color: white;
     border: none;
     border-radius: 4px;
-    margin: 2px;
+    margin: 5px;
+    transition: 0.2s;
 }
 
-button:disabled {
-    background-color: #cccccc;
-}
+button:hover { opacity: 0.8; }
+button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+.btn-green { background-color: #2ecc71; }
+.btn-orange { background-color: #e67e22; }
+.btn-blue { background-color: #3498db; }
 
 .visualizer {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    height: 300px;
-    border-bottom: 2px solid #333;
-    gap: 10px;
+    height: 350px;
+    border-bottom: 3px solid #333;
+    gap: 8px;
     padding: 10px;
+    background-color: #fafafa;
 }
 
 .bar {
-    width: 40px;
+    width: 45px;
     background-color: #3498db;
     position: relative;
-    transition: height 0.3s, background-color 0.3s, transform 0.3s;
+    transition: height 0.3s, background-color 0.3s;
     display: flex;
     justify-content: center;
     align-items: flex-end;
     color: white;
+    font-size: 14px;
     font-weight: bold;
     padding-bottom: 5px;
+    border-radius: 4px 4px 0 0;
 }
 
-/* Màu khi đang so sánh */
-.comparing {
-    background-color: #e74c3c !important; /* Màu đỏ */
-}
-
-/* Màu khi đã sắp xếp xong */
-.sorted {
-    background-color: #2ecc71 !important; /* Màu xanh lá */
-}
+.comparing { background-color: #e74c3c !important; transform: scale(1.1); }
+.sorted { background-color: #2ecc71 !important; }
     </style>
 </head>
 <body>
@@ -80,17 +91,20 @@ button:disabled {
         <h1>Mô phỏng Bubble Sort</h1>
         
         <div class="controls">
-            <input type="text" id="userInput" placeholder="Nhập số, cách nhau bằng dấu phẩy (vd: 10,2,30,15)">
-            <button onclick="initArray()">Tạo mảng</button>
-            <button id="startBtn" onclick="startSorting()">Bắt đầu (Auto)</button>
-            <button id="stepBtn" onclick="stepSorting()">Từng bước</button>
-            <button onclick="resetArray()">Làm mới</button>
+            <input type="text" id="userInput" placeholder="Nhập số: 10,2,30,15">
+            <button class="btn-blue" onclick="generateRandom()">Mảng ngẫu nhiên</button>
+            <button class="btn-green" onclick="initArray()">Tạo mảng</button>
+            <div class="action-btns">
+                <button id="startBtn" onclick="startSorting()">Bắt đầu (Auto)</button>
+                <button id="stepBtn" onclick="stepSorting()">Từng bước</button>
+                <button class="btn-orange" onclick="resetArray()">Làm mới</button>
+            </div>
         </div>
 
         <div id="visualizer" class="visualizer"></div>
         
         <div class="status">
-            <p id="infoText">Nhập mảng và nhấn "Tạo mảng" để bắt đầu.</p>
+            <p id="infoText">Bấm "Mảng ngẫu nhiên" hoặc nhập số rồi nhấn "Tạo mảng".</p>
         </div>
     </div>
     <script>
@@ -98,26 +112,37 @@ button:disabled {
 let i = 0;
 let j = 0;
 let isSorting = false;
-let isStepMode = false;
-const delay = 500; // Tốc độ (ms)
+const delay = 400; // Tốc độ nhanh hơn một chút để dễ xem
+
+// Hàm tạo mảng ngẫu nhiên
+function generateRandom() {
+    if (isSorting) return;
+    const randomArray = [];
+    const size = 10; // Số lượng phần tử
+    for (let k = 0; k < size; k++) {
+        // Tạo số ngẫu nhiên từ 5 đến 60
+        randomArray.push(Math.floor(Math.random() * 55) + 5);
+    }
+    document.getElementById('userInput').value = randomArray.join(', ');
+    initArray();
+    document.getElementById('infoText').innerText = "Đã tạo mảng ngẫu nhiên.";
+}
 
 // Hàm khởi tạo mảng từ input
 function initArray() {
+    if (isSorting) return;
     const input = document.getElementById('userInput').value;
     if (!input) {
-        alert("Vui lòng nhập các con số!");
+        alert("Vui lòng nhập số hoặc chọn Ngẫu nhiên!");
         return;
     }
     
-    // Chuyển chuỗi thành mảng số
     array = input.split(',').map(num => parseInt(num.trim())).filter(num => !isNaN(num));
     
     resetState();
     renderBars();
-    document.getElementById('infoText').innerText = "Mảng đã sẵn sàng.";
 }
 
-// Reset các biến điều hướng
 function resetState() {
     i = 0;
     j = 0;
@@ -128,79 +153,84 @@ function resetState() {
 
 function resetArray() {
     initArray();
+    document.getElementById('infoText').innerText = "Đã làm mới mảng.";
 }
 
-// Vẽ các thanh cột
 function renderBars() {
     const visualizer = document.getElementById('visualizer');
     visualizer.innerHTML = '';
     
+    // Tìm giá trị lớn nhất để tính toán tỷ lệ chiều cao
+    const maxVal = Math.max(...array);
+    
     array.forEach((value) => {
         const bar = document.createElement('div');
         bar.classList.add('bar');
-        bar.style.height = `${value * 5}px`; // Nhân 5 để dễ nhìn hơn
+        // Tính chiều cao theo % để không bị tràn khung
+        const height = (value / maxVal) * 300; 
+        bar.style.height = `${height}px`;
         bar.innerText = value;
         visualizer.appendChild(bar);
     });
 }
 
-// Hàm ngủ để tạo delay
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Thuật toán chính (Từng bước)
 async function bubbleSortStep() {
     const bars = document.querySelectorAll('.bar');
     const n = array.length;
 
     if (i < n - 1) {
-        // Highlight hai phần tử đang so sánh bằng màu đỏ
+        // Đánh dấu đang so sánh
         bars[j].classList.add('comparing');
         bars[j + 1].classList.add('comparing');
+        
+        document.getElementById('infoText').innerText = `So sánh ${array[j]} và ${array[j+1]}`;
 
-        await sleep(delay / 2);
+        await sleep(delay);
 
         if (array[j] > array[j + 1]) {
-            // Hoán đổi giá trị trong mảng
+            document.getElementById('infoText').innerText = `Hoán đổi ${array[j]} và ${array[j+1]}`;
+            // Hoán đổi
             let temp = array[j];
             array[j] = array[j + 1];
             array[j + 1] = temp;
 
-            // Cập nhật giao diện
             renderBars();
             
-            // Re-highlight sau khi render lại
+            // Cập nhật lại màu sau khi vẽ lại
             const newBars = document.querySelectorAll('.bar');
             newBars[j].classList.add('comparing');
             newBars[j + 1].classList.add('comparing');
+            await sleep(delay);
         }
 
-        await sleep(delay / 2);
-
-        // Bỏ màu đỏ
+        // Bỏ màu so sánh
         const currentBars = document.querySelectorAll('.bar');
         currentBars[j].classList.remove('comparing');
         currentBars[j + 1].classList.remove('comparing');
 
         j++;
         if (j >= n - i - 1) {
-            // Một phần tử đã về đúng vị trí (cuối cùng)
+            // Phần tử cuối cùng của lượt này đã đứng đúng vị trí
             currentBars[n - i - 1].classList.add('sorted');
             j = 0;
             i++;
         }
+        return true;
     } else {
-        // Đánh dấu phần tử đầu tiên cũng đã xong
-        bars[0].classList.add('sorted');
-        document.getElementById('infoText').innerText = "Hoàn thành sắp xếp!";
+        // Hoàn tất
+        bars.forEach(bar => bar.classList.add('sorted'));
+        document.getElementById('infoText').innerText = "Chúc mừng! Mảng đã được sắp xếp xong.";
         isSorting = false;
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('stepBtn').disabled = false;
         return false;
     }
-    return true;
 }
 
-// Chạy tự động
 async function startSorting() {
     if (isSorting) return;
     isSorting = true;
@@ -213,10 +243,8 @@ async function startSorting() {
     }
 }
 
-// Chạy từng bước khi nhấn nút
 async function stepSorting() {
     if (isSorting) return;
-    document.getElementById('startBtn').disabled = true;
     await bubbleSortStep();
 }
     </script>
