@@ -3,239 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mô phỏng Bubble Sort Nâng Cao</title>
+    <title>Mô phỏng Bubble Sort</title>
     <style>
-        /* style.css */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        body {
+    font-family: Arial, sans-serif;
     display: flex;
     justify-content: center;
-    background-color: #ecf0f1;
-    margin: 0;
-    padding-top: 50px;
+    background-color: #f4f4f9;
 }
 
 .container {
     text-align: center;
-    width: 90%;
-    max-width: 900px;
+    width: 80%;
+    margin-top: 50px;
 }
 
-#explanation-box {
-    background: #2c3e50;
-    color: #ecf0f1;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 1.1em;
-    border-left: 5px solid #e74c3c;
+.controls {
+    margin-bottom: 30px;
 }
 
-#visualizer {
+input {
+    padding: 8px;
+    width: 250px;
+}
+
+button {
+    padding: 8px 15px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    margin: 2px;
+}
+
+button:disabled {
+    background-color: #cccccc;
+}
+
+.visualizer {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    height: 350px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
+    height: 300px;
+    border-bottom: 2px solid #333;
+    gap: 10px;
     padding: 10px;
 }
 
 .bar {
     width: 40px;
-    margin: 0 4px;
     background-color: #3498db;
+    position: relative;
+    transition: height 0.3s, background-color 0.3s, transform 0.3s;
     display: flex;
     justify-content: center;
     align-items: flex-end;
     color: white;
     font-weight: bold;
     padding-bottom: 5px;
-    border-radius: 4px 4px 0 0;
-    transition: transform 0.2s, height 0.3s;
 }
 
-.comparing { background-color: #e74c3c !important; transform: scale(1.1); }
-.swapping { background-color: #f1c40f !important; }
-.sorted { background-color: #2ecc71 !important; }
-
-.controls {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    align-items: center;
+/* Màu khi đang so sánh */
+.comparing {
+    background-color: #e74c3c !important; /* Màu đỏ */
 }
 
-button {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.2s;
-    background: #34495e;
-    color: white;
+/* Màu khi đã sắp xếp xong */
+.sorted {
+    background-color: #2ecc71 !important; /* Màu xanh lá */
 }
-
-button:hover { background: #2c3e50; }
-button:disabled { background: #bdc3c7; cursor: not-allowed; }
-#btn-step { background: #8e44ad; }
-#btn-step:hover { background: #7d3c98; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Mô phỏng Bubble Sort</h1>
         
-        <div id="explanation-box">Sẵn sàng! Nhấn "Bắt đầu" hoặc "Từng bước".</div>
-
-        <div id="visualizer"></div>
-
         <div class="controls">
-            <button id="btn-reset" onclick="resetArray()">Tạo mảng mới</button>
-            <button id="btn-start" onclick="startSort(false)">Chạy tự động</button>
-            <button id="btn-step" onclick="handleNextStep()">Từng bước</button>
-            
-            <div class="speed-control">
-                <label>Tốc độ:</label>
-                <input type="range" id="speed" min="100" max="1000" value="600">
-            </div>
+            <input type="text" id="userInput" placeholder="Nhập số, cách nhau bằng dấu phẩy (vd: 10,2,30,15)">
+            <button onclick="initArray()">Tạo mảng</button>
+            <button id="startBtn" onclick="startSorting()">Bắt đầu (Auto)</button>
+            <button id="stepBtn" onclick="stepSorting()">Từng bước</button>
+            <button onclick="resetArray()">Làm mới</button>
+        </div>
+
+        <div id="visualizer" class="visualizer"></div>
+        
+        <div class="status">
+            <p id="infoText">Nhập mảng và nhấn "Tạo mảng" để bắt đầu.</p>
         </div>
     </div>
     <script>
-        // script.js
-const visualizer = document.getElementById('visualizer');
-const explanation = document.getElementById('explanation-box');
-const speedInput = document.getElementById('speed');
-let array = [];
-let bars = [];
+        let array = [];
+let i = 0;
+let j = 0;
+let isSorting = false;
 let isStepMode = false;
-let resolveStep; // Hàm để "giải phóng" lời hứa (promise) khi nhấn nút Next
+const delay = 500; // Tốc độ (ms)
+
+// Hàm khởi tạo mảng từ input
+function initArray() {
+    const input = document.getElementById('userInput').value;
+    if (!input) {
+        alert("Vui lòng nhập các con số!");
+        return;
+    }
+    
+    // Chuyển chuỗi thành mảng số
+    array = input.split(',').map(num => parseInt(num.trim())).filter(num => !isNaN(num));
+    
+    resetState();
+    renderBars();
+    document.getElementById('infoText').innerText = "Mảng đã sẵn sàng.";
+}
+
+// Reset các biến điều hướng
+function resetState() {
+    i = 0;
+    j = 0;
+    isSorting = false;
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('stepBtn').disabled = false;
+}
 
 function resetArray() {
+    initArray();
+}
+
+// Vẽ các thanh cột
+function renderBars() {
+    const visualizer = document.getElementById('visualizer');
     visualizer.innerHTML = '';
-    array = [];
-    bars = [];
-    isStepMode = false;
-    explanation.innerText = "Đã tạo mảng mới. Nhấn Bắt đầu hoặc Từng bước.";
-    explanation.style.borderLeftColor = "#e74c3c";
-
-    for (let i = 0; i < 12; i++) {
-        array.push(Math.floor(Math.random() * 85) + 15);
-    }
-
+    
     array.forEach((value) => {
         const bar = document.createElement('div');
         bar.classList.add('bar');
-        bar.style.height = `${value * 3}px`;
+        bar.style.height = `${value * 5}px`; // Nhân 5 để dễ nhìn hơn
         bar.innerText = value;
         visualizer.appendChild(bar);
-        bars.push(bar);
     });
-
-    toggleButtons(false);
 }
 
-function toggleButtons(disabled) {
-    document.getElementById('btn-start').disabled = disabled;
-    document.getElementById('btn-step').innerText = "Từng bước";
-    // Nút Reset luôn có thể bấm trừ khi đang chạy
+// Hàm ngủ để tạo delay
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Hàm đợi: Nếu là tự động thì đợi theo thời gian, nếu là từng bước thì đợi click chuột
-async function wait() {
-    if (isStepMode) {
-        return new Promise(resolve => {
-            resolveStep = resolve;
-        });
-    } else {
-        const ms = 1100 - speedInput.value;
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-}
+// Thuật toán chính (Từng bước)
+async function bubbleSortStep() {
+    const bars = document.querySelectorAll('.bar');
+    const n = array.length;
 
-function handleNextStep() {
-    if (!isStepMode && document.getElementById('btn-start').disabled === false) {
-        isStepMode = true;
-        startSort(true);
-    } else if (resolveStep) {
-        resolveStep(); // Giải phóng Promise đang đợi
-    }
-}
+    if (i < n - 1) {
+        // Highlight hai phần tử đang so sánh bằng màu đỏ
+        bars[j].classList.add('comparing');
+        bars[j + 1].classList.add('comparing');
 
-async function startSort(stepByStep) {
-    isStepMode = stepByStep;
-    document.getElementById('btn-start').disabled = true;
-    document.getElementById('btn-reset').disabled = true;
-    
-    if (isStepMode) {
-        document.getElementById('btn-step').innerText = "Tiếp theo >>";
-    }
+        await sleep(delay / 2);
 
-    let n = array.length;
-    for (let i = 0; i < n; i++) {
-        for (let j = 0; j < n - i - 1; j++) {
-            // 1. Thông báo đang so sánh
-            explanation.innerText = `So sánh cặp: ${array[j]} và ${array[j+1]}`;
-            explanation.style.borderLeftColor = "#3498db";
+        if (array[j] > array[j + 1]) {
+            // Hoán đổi giá trị trong mảng
+            let temp = array[j];
+            array[j] = array[j + 1];
+            array[j + 1] = temp;
+
+            // Cập nhật giao diện
+            renderBars();
             
-            bars[j].classList.add('comparing');
-            bars[j + 1].classList.add('comparing');
-
-            await wait();
-
-            // 2. Kiểm tra điều kiện hoán đổi
-            if (array[j] > array[j + 1]) {
-                explanation.innerText = `${array[j]} > ${array[j+1]} nên ta hoán đổi chúng.`;
-                explanation.style.borderLeftColor = "#f1c40f";
-                
-                bars[j].classList.add('swapping');
-                bars[j+1].classList.add('swapping');
-
-                // Hoán đổi logic
-                let temp = array[j];
-                array[j] = array[j + 1];
-                array[j + 1] = temp;
-
-                // Hoán đổi giao diện
-                bars[j].style.height = `${array[j] * 3}px`;
-                bars[j].innerText = array[j];
-                bars[j + 1].style.height = `${array[j + 1] * 3}px`;
-                bars[j + 1].innerText = array[j + 1];
-
-                await wait();
-                bars[j].classList.remove('swapping');
-                bars[j+1].classList.remove('swapping');
-            } else {
-                explanation.innerText = `${array[j]} <= ${array[j+1]}, không cần hoán đổi.`;
-            }
-
-            bars[j].classList.remove('comparing');
-            bars[j + 1].classList.remove('comparing');
+            // Re-highlight sau khi render lại
+            const newBars = document.querySelectorAll('.bar');
+            newBars[j].classList.add('comparing');
+            newBars[j + 1].classList.add('comparing');
         }
-        
-        // Phần tử cuối cùng đã được sắp xếp
-        bars[n - i - 1].classList.add('sorted');
-        explanation.innerText = `Phần tử ${array[n-i-1]} đã về đúng vị trí cuối mảng.`;
-        explanation.style.borderLeftColor = "#2ecc71";
-        await wait();
-    }
 
-    explanation.innerText = "Hoàn thành sắp xếp!";
-    document.getElementById('btn-reset').disabled = false;
-    toggleButtons(false);
+        await sleep(delay / 2);
+
+        // Bỏ màu đỏ
+        const currentBars = document.querySelectorAll('.bar');
+        currentBars[j].classList.remove('comparing');
+        currentBars[j + 1].classList.remove('comparing');
+
+        j++;
+        if (j >= n - i - 1) {
+            // Một phần tử đã về đúng vị trí (cuối cùng)
+            currentBars[n - i - 1].classList.add('sorted');
+            j = 0;
+            i++;
+        }
+    } else {
+        // Đánh dấu phần tử đầu tiên cũng đã xong
+        bars[0].classList.add('sorted');
+        document.getElementById('infoText').innerText = "Hoàn thành sắp xếp!";
+        isSorting = false;
+        return false;
+    }
+    return true;
 }
 
-// Khởi tạo
-resetArray();
+// Chạy tự động
+async function startSorting() {
+    if (isSorting) return;
+    isSorting = true;
+    document.getElementById('startBtn').disabled = true;
+    document.getElementById('stepBtn').disabled = true;
+
+    while (isSorting) {
+        let continues = await bubbleSortStep();
+        if (!continues) break;
+    }
+}
+
+// Chạy từng bước khi nhấn nút
+async function stepSorting() {
+    if (isSorting) return;
+    document.getElementById('startBtn').disabled = true;
+    await bubbleSortStep();
+}
     </script>
 </body>
 </html>
