@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort Visualization - Bản Cao Cấp</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --bg: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--dark);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { margin: 0; color: var(--primary); }
+
+        /* Input Section */
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            flex-grow: 1;
+            font-size: 16px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            color: white;
+        }
+
+        .btn-blue { background: var(--primary); }
+        .btn-green { background: var(--secondary); }
+        .btn-orange { background: var(--warning); color: #333; }
+        .btn-red { background: var(--danger); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        button:hover:not(:disabled) { opacity: 0.8; transform: translateY(-2px); }
+
+        /* Visualization */
+        #chart-container {
+            height: 300px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 8px;
+            margin: 40px 0;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .bar {
+            background-color: var(--primary);
+            width: 40px;
+            position: relative;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .bar-label {
+            position: absolute;
+            top: -25px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Status & Logs */
+        .status-box {
+            background: #e1f5fe;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary);
+            min-height: 50px;
+        }
+
+        .step-log {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* Info Section */
+        .grid-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+
+        .card h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid #f0f0f0; padding-bottom: 5px; }
+
+        @media (max-width: 600px) {
+            .grid-info { grid-template-columns: 1fr; }
+            .bar { width: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Merge Sort Visualization</h1>
+        <p>Trực quan hóa thuật toán Sắp xếp Trộn</p>
+    </header>
+
+    <div class="input-section">
+        <div class="input-group">
+            <label><strong>Nhập mảng:</strong></label>
+            <input type="text" id="custom-input" placeholder="Ví dụ: 45, 20, 80, 15, 60, 30 (cách nhau bằng dấu phẩy)">
+            <button class="btn-blue" onclick="loadCustomArray()">Sử dụng mảng này</button>
+            <button class="btn-orange" onclick="generateRandom()">Ngẫu nhiên</button>
+        </div>
+        
+        <div class="controls">
+            <div style="display:flex; align-items:center; gap:10px">
+                <span>Tốc độ:</span>
+                <input type="range" id="speed" min="100" max="1000" value="500">
+            </div>
+            <button id="start-btn" class="btn-green" onclick="startSort()">Chạy Tự Động</button>
+            <button id="next-btn" class="btn-blue" onclick="handleNextStep()" disabled>Bước Tiếp Theo</button>
+            <button class="btn-red" onclick="window.location.reload()">Reset</button>
+        </div>
+    </div>
+
+    <div id="chart-container">
+        <!-- Bars will be generated here -->
+    </div>
+
+    <div class="status-box">
+        <div id="status-text">Chào mừng! Hãy nhập mảng hoặc bấm Ngẫu nhiên.</div>
+        <div id="step-log" class="step-log"></div>
+    </div>
+
+    <div class="grid-info">
+        <div class="card">
+            <h3>Merge Sort là gì?</h3>
+            <p>Là thuật toán <b>Chia để trị (Divide and Conquer)</b>. Nó chia mảng thành các phần nhỏ nhất rồi trộn chúng lại theo thứ tự.</p>
+            <p><strong>Độ phức tạp:</strong> O(n log n) trong mọi trường hợp.</p>
+            <p><strong>Bộ nhớ phụ:</strong> O(n).</p>
+        </div>
+        <div class="card">
+            <h3>Cách hoạt động</h3>
+            <ul>
+                <li><strong>Bước 1:</strong> Chia đôi mảng liên tiếp cho đến khi mỗi mảng con chỉ còn 1 phần tử.</li>
+                <li><strong>Bước 2:</strong> So sánh các mảng con và trộn (merge) chúng lại thành mảng đã sắp xếp.</li>
+                <li><strong>Bước 3:</strong> Lặp lại cho đến khi toàn bộ mảng được trộn xong.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    let array = [];
+    let isManual = false;
+    let resolveNextStep;
+
+    const chartContainer = document.getElementById('chart-container');
+    const statusText = document.getElementById('status-text');
+    const stepLog = document.getElementById('step-log');
+    const speedInput = document.getElementById('speed');
+
+    // Khởi tạo mảng ngẫu nhiên khi load
+    window.onload = generateRandom;
+
+    function generateRandom() {
+        const randomArr = Array.from({length: 10}, () => Math.floor(Math.random() * 90) + 10);
+        renderArray(randomArr);
+        statusText.innerText = "Đã tạo mảng ngẫu nhiên. Nhấn 'Chạy Tự Động' hoặc nhập mảng mới.";
+    }
+
+    function loadCustomArray() {
+        const input = document.getElementById('custom-input').value;
+        const customArr = input.split(',')
+                                .map(item => parseInt(item.trim()))
+                                .filter(item => !isNaN(item));
+        
+        if (customArr.length < 2) {
+            alert("Vui lòng nhập ít nhất 2 con số, cách nhau bởi dấu phẩy!");
+            return;
+        }
+        if (customArr.length > 20) {
+            alert("Để nhìn rõ hơn, vui lòng nhập ít hơn 20 số.");
+            return;
+        }
+        renderArray(customArr);
+        statusText.innerText = "Đã tải mảng của bạn. Sẵn sàng sắp xếp.";
+    }
+
+    function renderArray(newArr) {
+        array = [...newArr];
+        chartContainer.innerHTML = '';
+        const maxVal = Math.max(...array);
+        
+        array.forEach((val, idx) => {
+            const bar = document.createElement('div');
+            bar.classList.add('bar');
+            bar.id = `bar-${idx}`;
+            // Tính toán chiều cao tỉ lệ (max 250px)
+            const height = (val / maxVal) * 250;
+            bar.style.height = `${height}px`;
+            
+            const label = document.createElement('span');
+            label.classList.add('bar-label');
+            label.innerText = val;
+            
+            bar.appendChild(label);
+            chartContainer.appendChild(bar);
+        });
+    }
+
+    async function wait() {
+        if (isManual) {
+            return new Promise(resolve => {
+                resolveNextStep = resolve;
+            });
+        } else {
+            return new Promise(resolve => setTimeout(resolve, 1100 - speedInput.value));
+        }
+    }
+
+    function handleNextStep() {
+        if (resolveNextStep) {
+            resolveNextStep();
+            resolveNextStep = null;
+        }
+    }
+
+    async function startSort() {
+        isManual = false;
+        document.getElementById('start-btn').disabled = true;
+        document.getElementById('next-btn').disabled = false;
+        
+        // Hỏi người dùng muốn chạy kiểu gì
+        if (confirm("Bạn muốn chạy từng bước thủ công? (Nhấn Cancel để chạy tự động)")) {
+            isManual = true;
+            statusText.innerText = "Chế độ thủ công: Nhấn 'Bước Tiếp Theo' để tiến hành.";
+        }
+
+        await mergeSort(0, array.length - 1);
+        
+        statusText.innerText = "Hoàn thành sắp xếp!";
+        document.getElementById('next-btn').disabled = true;
+        
+        // Hiệu ứng hoàn tất
+        for(let i=0; i<array.length; i++) {
+            document.getElementById(`bar-${i}`).style.backgroundColor = 'var(--secondary)';
+        }
+    }
+
+    async function mergeSort(left, right) {
+        if (left >= right) return;
+
+        const mid = Math.floor((left + right) / 2);
+        
+        // Hiển thị bước chia
+        highlightRange(left, right, 'var(--warning)');
+        statusText.innerText = `Chia mảng: [${left}...${right}] thành [${left}...${mid}] và [${mid+1}...${right}]`;
+        await wait();
+
+        await mergeSort(left, mid);
+        await mergeSort(mid + 1, right);
+        await merge(left, mid, right);
+    }
+
+    async function merge(left, mid, right) {
+        let leftArr = array.slice(left, mid + 1);
+        let rightArr = array.slice(mid + 1, right + 1);
+        
+        let i = 0, j = 0, k = left;
+
+        statusText.innerText = `Đang trộn hai nửa đã sắp xếp vào vị trí ${left} tới ${right}`;
+        
+        while (i < leftArr.length && j < rightArr.length) {
+            // Highlight các cột đang so sánh
+            document.getElementById(`bar-${left + i}`).style.backgroundColor = 'var(--danger)';
+            document.getElementById(`bar-${mid + 1 + j}`).style.backgroundColor = 'var(--danger)';
+            
+            stepLog.innerText = `So sánh ${leftArr[i]} và ${rightArr[j]}`;
+            await wait();
+
+            if (leftArr[i] <= rightArr[j]) {
+                array[k] = leftArr[i];
+                i++;
+            } else {
+                array[k] = rightArr[j];
+                j++;
+            }
+            updateBarHeight(k, array[k]);
+            k++;
+        }
+
+        while (i < leftArr.length) {
+            array[k] = leftArr[i];
+            updateBarHeight(k, array[k]);
+            i++; k++;
+            await wait();
+        }
+
+        while (j < rightArr.length) {
+            array[k] = rightArr[j];
+            updateBarHeight(k, array[k]);
+            j++; k++;
+            await wait();
+        }
+
+        // Đánh dấu đã trộn xong vùng này
+        highlightRange(left, right, 'var(--secondary)');
+    }
+
+    function updateBarHeight(idx, val) {
+        const bar = document.getElementById(`bar-${idx}`);
+        const maxVal = Math.max(...array);
+        const height = (val / maxVal) * 250;
+        bar.style.height = `${height}px`;
+        bar.querySelector('.bar-label').innerText = val;
+        bar.style.backgroundColor = 'var(--secondary)';
+    }
+
+    function highlightRange(start, end, color) {
+        for (let i = start; i <= end; i++) {
+            document.getElementById(`bar-${i}`).style.backgroundColor = color;
+        }
+    }
+</script>
+
+</body>
+</html>

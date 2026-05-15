@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minh họa Thuật toán Quick Sort</title>
+    <style>
+        /* Định nghĩa biến màu sắc */
+        :root {
+            --primary: #3b82f6;    /* Xanh dương - Mặc định */
+            --pivot: #ef4444;      /* Đỏ - Điểm chốt */
+            --compare: #fbbf24;    /* Vàng - Đang so sánh */
+            --sorted: #10b981;     /* Xanh lá - Đã xong */
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        /* Bảng điều khiển */
+        .controls {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            width: 220px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-start { background-color: var(--primary); color: white; }
+        .btn-step { background-color: #8b5cf6; color: white; }
+        .btn-random { background-color: #64748b; color: white; }
+        .btn-reset { background-color: #f1f5f9; color: #475569; }
+
+        button:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Trạng thái */
+        .status-bar {
+            text-align: center;
+            font-weight: 600;
+            color: #8b5cf6;
+            margin-bottom: 15px;
+            height: 24px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+
+        .stat-label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; }
+        .stat-value { font-size: 1.3rem; font-weight: bold; color: var(--text); }
+
+        /* Khung hiển thị mảng */
+        .visualizer-container {
+            background: var(--card);
+            height: 380px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 30px 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            gap: 6px;
+        }
+
+        .bar {
+            flex: 1;
+            max-width: 45px;
+            background-color: var(--primary);
+            position: relative;
+            border-radius: 6px 6px 0 0;
+            transition: height 0.3s ease, background-color 0.3s ease;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* Màu sắc trạng thái cột */
+        .bar.pivot { background-color: var(--pivot) !important; }
+        .bar.comparing { background-color: var(--compare) !important; }
+        .bar.sorted { background-color: var(--sorted) !important; }
+
+        /* Giải thích thuật toán */
+        .explanation {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .explanation h2 { color: var(--primary); margin-bottom: 15px; }
+        .explanation h3 { margin: 20px 0 10px; font-size: 1.1rem; }
+        
+        .complexity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        .box { width: 15px; height: 15px; border-radius: 3px; }
+
+        @media (max-width: 600px) {
+            .controls { flex-direction: column; align-items: stretch; }
+            input[type="text"] { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Mô phỏng Quick Sort</h1>
+        <p>Thuật toán sắp xếp nhanh bằng phân hoạch Lomuto</p>
+    </header>
+
+    <div class="controls">
+        <input type="text" id="arrayInput" placeholder="Nhập mảng: 40, 10, 30, 20...">
+        <button class="btn-start" id="startBtn">▶ Chạy tự động</button>
+        <button class="btn-step" id="stepBtn">⏭ Bước tiếp theo</button>
+        <button class="btn-random" id="randomBtn">🎲 Mảng ngẫu nhiên</button>
+        <button class="btn-reset" id="resetBtn">🔄 Làm mới</button>
+    </div>
+
+    <div class="status-bar" id="statusMsg">Sẵn sàng để bắt đầu!</div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="box" style="background: var(--primary)"></div> Mặc định</div>
+        <div class="legend-item"><div class="box" style="background: var(--pivot)"></div> Điểm chốt (Pivot)</div>
+        <div class="legend-item"><div class="box" style="background: var(--compare)"></div> Đang so sánh</div>
+        <div class="legend-item"><div class="box" style="background: var(--sorted)"></div> Đã đúng vị trí</div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-label">Chốt hiện tại</div>
+            <div id="pivotVal" class="stat-value">-</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Số lần hoán đổi</div>
+            <div id="swapCount" class="stat-value">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Số bước thực hiện</div>
+            <div id="stepCount" class="stat-value">0</div>
+        </div>
+    </div>
+
+    <div class="visualizer-container" id="visualizer"></div>
+
+    <div class="explanation">
+        <h2>Tìm hiểu về Quick Sort</h2>
+        <p><strong>Quick Sort</strong> là thuật toán sắp xếp dựa trên nguyên lý <strong>Chia để trị</strong>. Nó hoạt động bằng cách chọn một phần tử làm "điểm chốt" (pivot) và chia mảng thành hai phần: một phần nhỏ hơn chốt và một phần lớn hơn chốt.</p>
+        
+        <h3>Các bước thực hiện:</h3>
+        <ol style="margin-left: 20px;">
+            <li>Chọn <b>Pivot</b> (trong demo này là phần tử cuối cùng của dãy).</li>
+            <li><b>Phân hoạch:</b> Duyệt mảng và đưa các phần tử nhỏ hơn chốt về phía trái, phần tử lớn hơn về phía phải.</li>
+            <li><b>Đệ quy:</b> Lặp lại quá trình trên cho hai mảng con bên trái và bên phải cho đến khi toàn bộ mảng được sắp xếp.</li>
+        </ol>
+
+        <div class="complexity-grid">
+            <div><strong>Độ phức tạp tốt nhất:</strong> <br>O(n log n)</div>
+            <div><strong>Độ phức tạp trung bình:</strong> <br>O(n log n)</div>
+            <div><strong>Độ phức tạp xấu nhất:</strong> <br>O(n²)</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Khai báo các biến DOM
+    const visualizer = document.getElementById('visualizer');
+    const arrayInput = document.getElementById('arrayInput');
+    const startBtn = document.getElementById('startBtn');
+    const stepBtn = document.getElementById('stepBtn');
+    const randomBtn = document.getElementById('randomBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const pivotValDisplay = document.getElementById('pivotVal');
+    const swapCountDisplay = document.getElementById('swapCount');
+    const stepCountDisplay = document.getElementById('stepCount');
+
+    let array = [];
+    let swaps = 0;
+    let steps = 0;
+    let isRunning = false;
+    let isAutoMode = false;
+    let resolveNextStep = null; // Biến điều khiển dừng để chờ người dùng bấm nút Step
+
+    // 1. Tạo mảng ngẫu nhiên
+    function generateRandomArray() {
+        if (isRunning) return;
+        const size = Math.floor(Math.random() * 8) + 7; // Từ 7 đến 15 cột
+        array = Array.from({ length: size }, () => Math.floor(Math.random() * 85) + 10);
+        arrayInput.value = array.join(', ');
+        resetStats();
+        renderBars();
+        statusMsg.innerText = "Đã tạo mảng mới!";
+    }
+
+    // 2. Vẽ các cột lên giao diện
+    function renderBars(highlightIndices = {}, pivotIdx = -1, sortedIndices = []) {
+        visualizer.innerHTML = '';
+        const maxVal = Math.max(...array, 1);
+        
+        array.forEach((val, idx) => {
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.style.height = `${(val / maxVal) * 320}px`;
+
+            if (idx === pivotIdx) bar.classList.add('pivot');
+            else if (highlightIndices[idx]) bar.classList.add('comparing');
+            else if (sortedIndices.includes(idx)) bar.classList.add('sorted');
+
+            const label = document.createElement('span');
+            label.className = 'bar-value';
+            label.innerText = val;
+            
+            bar.appendChild(label);
+            visualizer.appendChild(bar);
+        });
+    }
+
+    // 3. Hàm chờ đợi (Tự động hoặc Thủ công)
+    function waitForStep() {
+        if (isAutoMode) {
+            return new Promise(resolve => setTimeout(resolve, 400));
+        } else {
+            return new Promise(resolve => {
+                resolveNextStep = resolve;
+            });
+        }
+    }
+
+    // 4. Thuật toán Phân hoạch (Partition)
+    async function partition(low, high) {
+        let pivot = array[high];
+        pivotValDisplay.innerText = pivot;
+        let i = low - 1;
+
+        statusMsg.innerText = `Chọn ${pivot} làm điểm chốt (Pivot)`;
+        renderBars({}, high);
+        await waitForStep();
+
+        for (let j = low; j < high; j++) {
+            steps++;
+            stepCountDisplay.innerText = steps;
+
+            statusMsg.innerText = `So sánh ${array[j]} với chốt ${pivot}`;
+            renderBars({ [j]: true, [i+1]: true }, high);
+            await waitForStep();
+
+            if (array[j] < pivot) {
+                i++;
+                [array[i], array[j]] = [array[j], array[i]];
+                swaps++;
+                swapCountDisplay.innerText = swaps;
+                statusMsg.innerText = `Hoán đổi ${array[i]} và ${array[j]} (vì nhỏ hơn chốt)`;
+                renderBars({ [i]: true, [j]: true }, high);
+                await waitForStep();
+            }
+        }
+
+        // Đưa chốt về vị trí đúng giữa
+        [array[i + 1], array[high]] = [array[high], array[i + 1]];
+        swaps++;
+        swapCountDisplay.innerText = swaps;
+        statusMsg.innerText = `Đưa chốt ${pivot} về đúng vị trí cố định`;
+        renderBars({}, i + 1);
+        await waitForStep();
+        
+        return i + 1;
+    }
+
+    // 5. Thuật toán Quick Sort đệ quy
+    async function quickSort(low, high) {
+        if (low <= high) {
+            let pi = await partition(low, high);
+            await quickSort(low, pi - 1);
+            await quickSort(pi + 1, high);
+        }
+    }
+
+    // 6. Xử lý các sự kiện nút bấm
+    async function startExecution(auto) {
+        if (isRunning && auto) return;
+
+        if (!isRunning) {
+            // Lấy dữ liệu mảng từ input
+            const val = arrayInput.value;
+            if (val.trim() !== "") {
+                array = val.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            }
+            if (array.length === 0) return alert("Vui lòng nhập mảng!");
+
+            isRunning = true;
+            isAutoMode = auto;
+            toggleInputs(true);
+            resetStats();
+            
+            await quickSort(0, array.length - 1);
+            
+            finishSorting();
+        } else {
+            // Nếu đang chạy mà bấm "Next Step"
+            if (resolveNextStep) {
+                const temp = resolveNextStep;
+                resolveNextStep = null;
+                temp();
+            }
+        }
+    }
+
+    function finishSorting() {
+        isRunning = false;
+        isAutoMode = false;
+        toggleInputs(false);
+        statusMsg.innerText = "Sắp xếp hoàn tất!";
+        pivotValDisplay.innerText = "Xong!";
+        renderBars({}, -1, Array.from(Array(array.length).keys()));
+    }
+
+    function toggleInputs(disabled) {
+        startBtn.disabled = disabled;
+        randomBtn.disabled = disabled;
+        arrayInput.disabled = disabled;
+    }
+
+    function resetStats() {
+        swaps = 0; steps = 0;
+        swapCountDisplay.innerText = '0';
+        stepCountDisplay.innerText = '0';
+        pivotValDisplay.innerText = '-';
+    }
+
+    // Gán sự kiện
+    startBtn.addEventListener('click', () => startExecution(true));
+    stepBtn.addEventListener('click', () => startExecution(false));
+    randomBtn.addEventListener('click', generateRandomArray);
+    document.getElementById('resetBtn').addEventListener('click', () => window.location.reload());
+
+    // Khởi tạo mặc định khi tải trang
+    generateRandomArray();
+
+</script>
+
+</body>
+</html>
