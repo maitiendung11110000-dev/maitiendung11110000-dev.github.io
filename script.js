@@ -12,10 +12,10 @@ let categories = JSON.parse(localStorage.getItem('fm_categories')) || [
 ];
 
 let dishes = JSON.parse(localStorage.getItem('fm_dishes')) || [
-  { id: 1, name: 'Phở Bò', price: 65000, image: 'hhttps://tarasmulticulturaltable.com/wp-content/uploads/2013/06/Pho-Bo-Vietnamese-Beef-Noodle-Soup-2-of-3.jpgttps://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Pho_bo_viet_nam.jpg/1280px-Pho_bo_viet_nam.jpg', description: 'Phở bò truyền thống thơm ngon', categoryId: 1, active: true },
-  { id: 2, name: 'Bún Bò Huế', price: 60000, image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Bun_bo_Hue.jpg/1280px-Bun_bo_Hue.jpg', description: 'Bún bò đậm đà đặc trưng Huế', categoryId: 1, active: true },
-  { id: 3, name: 'Gỏi Cuốn', price: 40000, image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Vietnamese_Food_-_Goi_Cuon.jpg/1280px-Vietnamese_Food_-_Goi_Cuon.jpg', description: 'Gỏi cuốn tươi mát kèm nước chấm', categoryId: 2, active: true },
-  { id: 4, name: 'Chè Ba Màu', price: 30000, image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Che_ba_mau.jpg/1280px-Che_ba_mau.jpg', description: 'Chè ba màu mát lạnh', categoryId: 3, active: true },
+  { id: 1, name: 'Phở Bò', price: 65000, image: 'https://tarasmulticulturaltable.com/wp-content/uploads/2013/06/Pho-Bo-Vietnamese-Beef-Noodle-Soup-2-of-3.jpg', description: 'Phở bò truyền thống thơm ngon', categoryId: 1, active: true },
+  { id: 2, name: 'Bún Bò Huế', price: 60000, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBB6Za60XMWyGPOpLpJ8gu-wa8-rpic49kduoWngIxAw&s=10', description: 'Bún bò đậm đà đặc trưng Huế', categoryId: 5, active: true },
+  { id: 3, name: 'Gỏi Cuốn', price: 40000, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStNE3HrPBN6BAVOp0nfdBE_2EXM4xBetzhyFhMhwVaHg&s=10', description: 'Gỏi cuốn tươi mát kèm nước chấm', categoryId: 2, active: true },
+  { id: 4, name: 'Chè Ba Màu', price: 30000, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSe46Khsj4eodrI1pkEOKDOkv5vyCVbZ_RXUgGaJLMFIg&s=10', description: 'Chè ba màu mát lạnh', categoryId: 3, active: true },
   { id: 5, name: 'Cà Phê Sữa Đá', price: 25000, image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/A_small_cup_of_coffee.JPG/1280px-A_small_cup_of_coffee.JPG', description: 'Cà phê sữa đá đậm đà', categoryId: 4, active: true }
 ];
 
